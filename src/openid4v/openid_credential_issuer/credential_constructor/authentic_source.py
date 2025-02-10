@@ -170,6 +170,7 @@ class CredentialConstructor(object):
         httpc = self.upstream_get("attribute", "httpc")
         httpc_params = self.upstream_get("attribute", "httpc_params")
         try:
+            logger.debug(f"{method} {url} {headers} {json.dumps(body)} {httpc_params}")
             resp = httpc(method, url, data=json.dumps(body), headers=headers, **httpc_params)
         except Exception as err:
             logger.error(f"Exception on request: {err}")
