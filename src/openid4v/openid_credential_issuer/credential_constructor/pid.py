@@ -82,7 +82,7 @@ class PIDConstructor(CredentialConstructor):
                 _ava["birth_date"] = _ava["birth_date"][0]
 
         if "identity" not in _body:
-            _body["identity"] = {"schema": {"name": "FR"}}
+            _body["identity"] = {"schema": {"name": "DefaultSchema"}}
 
         _body["identity"].update(_ava)
 
@@ -92,6 +92,8 @@ class PIDConstructor(CredentialConstructor):
         # The corresponding private keys were not found.
         # The new flow works with Satosa's own key instead.
         # _body["jwk"] = request["__verified_proof"].jws_header["jwk"]
+        if "vct" not in _body:
+            _body["vct"] = _body["document_type"]
         ci = Issuer(
             key_jar=self.upstream_get("attribute", "keyjar"),
             iss=self.upstream_get("attribute", "entity_id"),
