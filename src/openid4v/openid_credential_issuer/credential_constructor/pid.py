@@ -86,14 +86,20 @@ class PIDConstructor(CredentialConstructor):
 
         _body["identity"].update(_ava)
 
-        _body["jwk"] = request["__verified_proof"].jws_header["jwk"]
-
+        # TODO: Need to be fixed in the future with the wallet public key.
+        # TODO: See "Representation of an Asymmetric Proof-of-Possession Key".
+        # The commented line below retrieves wallet public keys saved in `op_storage`.
+        # The corresponding private keys were not found.
+        # The new flow works with Satosa's own key instead.
+        # _body["jwk"] = request["__verified_proof"].jws_header["jwk"]
         ci = Issuer(
             key_jar=self.upstream_get("attribute", "keyjar"),
             iss=self.upstream_get("attribute", "entity_id"),
             sign_alg="ES256",
             lifetime=31536000,
-            holder_key={},
+            holder_key=self.upstream_get("attribute", "keyjar").get_signing_key(
+                key_type="EC"
+            )[0],
         )
 
         logger.debug(f"Combined body: {_body}")
