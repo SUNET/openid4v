@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import datetime
 from typing import Optional, Union
 
 from idpyoidc.message import Message
@@ -11,7 +12,35 @@ from openid4v.openid_credential_issuer.credential import CredentialConstructor
 
 logger = logging.getLogger(__name__)
 
+def calculate_age(born_date:datetime) ->int:
+    current_date = datetime.now()
 
+    age = current_date.year - born_date.year
+    if born_date.month > current_date.month:
+        age -= 1
+    elif born_date.month == current_date.month and born_date.day > current_date.day:
+        age -= 1
+
+    return age
+
+
+def is_underaged(born_date:datetime) -> bool:
+    return (
+        calculate_age(born_date)
+        < 18
+    )
+def convert_to_date(date_string:str) -> datetime:
+    try:
+        return datetime.strptime(date_string, "%Y-%m-%d")
+    except ValueError:
+        return "Invalid date format. Use YYYY-MM-DD."
+
+def is_over_18(date_string:str)->bool:
+    born_date=convert_to_date(date_string)
+    return (
+        calculate_age(born_date)
+        >=18
+    )
 class PIDConstructor(CredentialConstructor):
 
     def __init__(self, upstream_get, **kwargs):
@@ -20,9 +49,7 @@ class PIDConstructor(CredentialConstructor):
         self.url = kwargs.get("url")  # MUST have a value
         self.body = kwargs.get("body", {})
         self.claims = kwargs.get(
-            "attributes", ["family_name", "given_name", "birth_date"]
-        )
-
+            "attributes", ["family_name","given_name", "birth_date"])
     def _get_userinfo(self, cntx, user_id, claims_restriction, client_id):
         _persistence = self.upstream_get("attribute", "persistence")
         logger.debug(f"Using {_persistence.name} persistence layer")
@@ -69,6 +96,7 @@ class PIDConstructor(CredentialConstructor):
         logger.debug(f"Using {persistence.name} persistence layer")
         client_subject_id = combine_client_subject_id(client_id, user_id)
         authn_claims = persistence.load_claims(client_subject_id)
+        logger.debug(f"Anna {authn_claims}")
         # filter on accepted claims
         _ava = {}
         logger.debug(f"AVA claims: {authn_claims}")
@@ -79,7 +107,7 @@ class PIDConstructor(CredentialConstructor):
 
         if "birth_date" in _ava:
             if isinstance(_ava["birth_date"], list):
-                _ava["birth_date"] = _ava["birth_date"][0]
+               _ava["birth_date"] = _ava["birth_date"][0]
 
         if "identity" not in _body:
             _body["identity"] = {"schema": {"name": "DefaultSchema"}}
@@ -92,8 +120,23 @@ class PIDConstructor(CredentialConstructor):
         # The corresponding private keys were not found.
         # The new flow works with Satosa's own key instead.
         # _body["jwk"] = request["__verified_proof"].jws_header["jwk"]
+        
+        #pass for now since it is optional 
+        if "age_over_18" not in _body:
+            pass
+            #_body["age_over_18"]=is_over_18(_ava["birth_date"])
+        #TODO: add to db?
+        if "issuing_authority" not in _body:
+            _body["issuing_authority"]="SE"
+        #TODO: add to db?
+        if "issuing_country" not in _body:
+            _body["issuing_country"]="SE"
+        #TODO: should be in db?
         if "vct" not in _body:
-            _body["vct"] = _body["document_type"]
+            _body["vct"] ="urn:eu.europa.ec.eudi:pid:1"
+        #TODO: should be in db?
+        if "nationality" not in _body["identity"]:
+            _body["identity"]["nationality"] = "SE"
         ci = Issuer(
             key_jar=self.upstream_get("attribute", "keyjar"),
             iss=self.upstream_get("attribute", "entity_id"),
@@ -109,6 +152,8 @@ class PIDConstructor(CredentialConstructor):
         _sdjwt = ci.create_holder_message(
             payload=_body, jws_headers={"typ": "example+sd-jwt"}
         )
+        print(_sdjwt)
+
         return json.dumps({"credentials": [{"credential": _sdjwt}]})
 
 
@@ -213,4 +258,5 @@ class PIDConstructor(CredentialConstructor):
     #     msg = self.get_response(url=self.url, body=_body, headers={"Content-Type": "application/json"})
     #     logger.debug(f"return message: {msg}")
     #     return msg
+"""
 """
