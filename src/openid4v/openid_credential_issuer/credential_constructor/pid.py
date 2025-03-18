@@ -6,9 +6,10 @@ from typing import Optional, Union
 
 from idpyoidc.message import Message
 from idpysdjwt.issuer import Issuer
-from openid4v.openid_credential_issuer.credential import CredentialConstructor
 from satosa_idpyop.persistence import Persistence
 from satosa_idpyop.utils import combine_client_subject_id
+
+from openid4v.openid_credential_issuer.credential import CredentialConstructor
 
 logger = logging.getLogger(__name__)
 vctm_dict = {
@@ -31,7 +32,7 @@ vctm_dict = {
                 },
                 "svg_templates": [
                     {
-                        "uri": "https://raw.githubusercontent.com/AniaAlex/images/refs/heads/main/template-pid.svg",
+                        "uri": "https://raw.githubusercontent.com/SUNET/openid4v/refs/heads/main/images/template-pid.svg",
                         "uri#integrity": "",
                         "properties": {
                             "orientation": "",
