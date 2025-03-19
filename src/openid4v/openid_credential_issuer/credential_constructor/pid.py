@@ -32,7 +32,7 @@ vctm_dict = {
                 },
                 "svg_templates": [
                     {
-                        "uri": "https://raw.githubusercontent.com/SUNET/openid4v/refs/heads/main/images/template-pid.svg",
+                        "uri": "https://raw.githubusercontent.com/SUNET/openid4v/main/images/template-pid.svg",
                         "uri#integrity": "",
                         "properties": {
                             "orientation": "",
