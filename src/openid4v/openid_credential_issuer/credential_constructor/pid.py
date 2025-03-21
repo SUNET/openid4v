@@ -6,16 +6,15 @@ from typing import Optional, Union
 
 from idpyoidc.message import Message
 from idpysdjwt.issuer import Issuer
+from openid4v.openid_credential_issuer.credential import CredentialConstructor
 from satosa_idpyop.persistence import Persistence
 from satosa_idpyop.utils import combine_client_subject_id
-
-from openid4v.openid_credential_issuer.credential import CredentialConstructor
 
 logger = logging.getLogger(__name__)
 vctm_dict = {
     "vct": "urn:eu.europa.ec.eudi:pid:1",
     "name": "PID",
-    "description": "This is an PID document issued by the well know PID issuer",
+    "description": "This is a PID document issued by the well know PID issuer",
     "display": [
         {
             "lang": "en-US",
@@ -188,7 +187,6 @@ class PIDConstructor(CredentialConstructor):
         logger.debug(f"Using {persistence.name} persistence layer")
         client_subject_id = combine_client_subject_id(client_id, user_id)
         authn_claims = persistence.load_claims(client_subject_id)
-        logger.debug(f"Anna {authn_claims}")
         # filter on accepted claims
         _ava = {}
         logger.debug(f"AVA claims: {authn_claims}")
@@ -200,40 +198,37 @@ class PIDConstructor(CredentialConstructor):
         if "birth_date" in _ava:
             if isinstance(_ava["birth_date"], list):
                 _ava["birth_date"] = _ava["birth_date"][0]
-
-        if "identity" not in _body:
-            _body["identity"] = {"schema": {"name": "DefaultSchema"}}
-
-        _body.update(_ava)
+        response_body = {}
+        response_body.update(_ava)
 
         # TODO: age_over_18 is OPTIONAL:the plan to implement in May 2025
         # TODO: FIX upon implementation there is a problmen in json
         # meaning false values will be ommited
-        if "age_over_18" not in _body:
+        if "age_over_18" not in response_body:
             pass
             # _body["age_over_18"]=is_over_18(_ava["birth_date"])
         # MANDATORY: hardcoded
-        if "issuing_authority" not in _body:
-            _body["issuing_authority"] = "EU"
+        if "issuing_authority" not in response_body:
+            response_body["issuing_authority"] = "EU"
         # MANDATORY: hardcoded
-        if "issuing_country" not in _body:
-            _body["issuing_country"] = "EU"
-        if "vct" not in _body:
-            _body["vct"] = "urn:eu.europa.ec.eudi:pid:1"
+        if "issuing_country" not in response_body:
+            response_body["issuing_country"] = "EU"
+        if "vct" not in response_body:
+            response_body["vct"] = "urn:eu.europa.ec.eudi:pid:1"
         # MANDATORY: hardcoded
-        if "nationality" not in _body:
-            _body["nationality"] = ["EU"]
+        if "nationality" not in response_body:
+            response_body["nationality"] = ["EU"]
         # MANDATORY: hardcoded
-        if "birth_place" not in _body:
-            _body["birth_place"] = "EU"
+        if "birth_place" not in response_body:
+            response_body["birth_place"] = "EU"
 
-        if "issuance_date" not in _body:
-            _body["issuance_date"] = datetime.today().strftime("%Y-%m-%d")
+        if "issuance_date" not in response_body:
+            response_body["issuance_date"] = datetime.today().strftime("%Y-%m-%d")
         # MANDATORY: hardcoded : admin expiry, not technical
-        if "expiry_date" not in _body:
-            _body["expiry_date"] = (datetime.today() + timedelta(days=365)).strftime(
-                "%Y-%m-%d"
-            )
+        if "expiry_date" not in response_body:
+            response_body["expiry_date"] = (
+                datetime.today() + timedelta(days=365)
+            ).strftime("%Y-%m-%d")
 
         # TODO: Need to be fixed in the future with the wallet public key.
         # TODO: See "Representation of an Asymmetric Proof-of-Possession Key".
@@ -241,7 +236,6 @@ class PIDConstructor(CredentialConstructor):
         # The corresponding private keys were not found.
         # The new flow works with Satosa's own keys instead.
         # _body["jwk"] = request["__verified_proof"].jws_header["jwk"]
-
         ci = Issuer(
             key_jar=self.upstream_get("attribute", "keyjar"),
             iss=self.upstream_get("attribute", "entity_id"),
@@ -251,11 +245,9 @@ class PIDConstructor(CredentialConstructor):
                 key_type="EC"
             )[0],
         )
-
-        logger.debug(f"Combined body: {_body}")
         vctm = get_vctm()
         _sdjwt = ci.create_holder_message(
-            payload=_body, jws_headers={"vctm": [vctm], "typ": "example+sd-jwt"}
+            payload=response_body, jws_headers={"vctm": [vctm], "typ": "vc+sd-jwt"}
         )
 
         return json.dumps({"credentials": [{"credential": _sdjwt}]})
