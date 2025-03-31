@@ -94,7 +94,8 @@ def fetch_userinfo(body):
 
 DOCTYPE = {
     "EHICCredential": "EHIC",
-    "PDA1Credential": "PDA1"
+    "PDA1Credential": "PDA1",
+    "DiplomaCredential": "Diploma"
 }
 
 
