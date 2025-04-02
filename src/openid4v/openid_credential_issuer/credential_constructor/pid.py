@@ -6,9 +6,10 @@ from typing import Optional, Union
 
 from idpyoidc.message import Message
 from idpysdjwt.issuer import Issuer
-from openid4v.openid_credential_issuer.credential import CredentialConstructor
 from satosa_idpyop.persistence import Persistence
 from satosa_idpyop.utils import combine_client_subject_id
+
+from openid4v.openid_credential_issuer.credential import CredentialConstructor
 
 logger = logging.getLogger(__name__)
 vctm_dict = {
@@ -179,6 +180,7 @@ class PIDConstructor(CredentialConstructor):
             _body["document_type"] = _vct
         else:
             _body = grant.authorization_request
+            logger.debug(f"{dict(_body)}")
 
         logger.debug(f"Authorization request claims: {_body}")
 
@@ -198,7 +200,7 @@ class PIDConstructor(CredentialConstructor):
         if "birth_date" in _ava:
             if isinstance(_ava["birth_date"], list):
                 _ava["birth_date"] = _ava["birth_date"][0]
-        response_body = {}
+        response_body ={}
         response_body.update(_ava)
 
         # TODO: age_over_18 is OPTIONAL:the plan to implement in May 2025
@@ -226,9 +228,9 @@ class PIDConstructor(CredentialConstructor):
             response_body["issuance_date"] = datetime.today().strftime("%Y-%m-%d")
         # MANDATORY: hardcoded : admin expiry, not technical
         if "expiry_date" not in response_body:
-            response_body["expiry_date"] = (
-                datetime.today() + timedelta(days=365)
-            ).strftime("%Y-%m-%d")
+            response_body["expiry_date"] = (datetime.today() + timedelta(days=365)).strftime(
+                "%Y-%m-%d"
+            )
 
         # TODO: Need to be fixed in the future with the wallet public key.
         # TODO: See "Representation of an Asymmetric Proof-of-Possession Key".
@@ -236,14 +238,16 @@ class PIDConstructor(CredentialConstructor):
         # The corresponding private keys were not found.
         # The new flow works with Satosa's own keys instead.
         # _body["jwk"] = request["__verified_proof"].jws_header["jwk"]
+
+        response_body["cnf"] = {"jwk":request["__verified_proof"].jws_header["jwk"]}
+        logger.debug(f"{dict(request)}")
+
         ci = Issuer(
             key_jar=self.upstream_get("attribute", "keyjar"),
             iss=self.upstream_get("attribute", "entity_id"),
             sign_alg="ES256",
             lifetime=31536000,
-            holder_key=self.upstream_get("attribute", "keyjar").get_signing_key(
-                key_type="EC"
-            )[0],
+            holder_key={},
         )
         vctm = get_vctm()
         _sdjwt = ci.create_holder_message(
