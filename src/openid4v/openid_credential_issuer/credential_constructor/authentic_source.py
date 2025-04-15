@@ -92,10 +92,13 @@ def fetch_userinfo(body):
     return body
 
 
+# Credential type : document_type
 DOCTYPE = {
     "EHICCredential": "EHIC",
     "PDA1Credential": "PDA1",
-    "DiplomaCredential": "Diploma"
+    "DiplomaCredential": "Diploma",
+    "ELM": "ELMCredential",
+    "MicroCredential": "Microcredential",
 }
 
 
