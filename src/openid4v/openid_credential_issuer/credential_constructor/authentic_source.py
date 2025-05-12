@@ -99,6 +99,7 @@ DOCTYPE = {
     "DiplomaCredential": "Diploma",
     "ELM": "ELMCredential",
     "MicroCredential": "Microcredential",
+    "PID": "PIDCredential",
 }
 
 
