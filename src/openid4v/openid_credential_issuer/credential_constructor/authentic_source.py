@@ -97,9 +97,9 @@ DOCTYPE = {
     "EHICCredential": "EHIC",
     "PDA1Credential": "PDA1",
     "DiplomaCredential": "Diploma",
-    "ELM": "ELMCredential",
-    "MicroCredential": "Microcredential",
-    "PID": "PIDCredential",
+    "ELMCredential": "ELM",
+    "MicroCredential": "MicroCredential",
+    "PIDCredential": "PID",
 }
 
 
