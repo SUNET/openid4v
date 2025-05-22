@@ -64,7 +64,7 @@ vctm_dict = {
             "display": [
                 {
                 "lang": "en-US",
-                "label": "Date of birth",
+                "label": "Date of Birth",
                 "description": "Full birth date (day, month, year)."
                 }
             ]
@@ -86,11 +86,11 @@ vctm_dict = {
             "display": [
                 {
                     "lang": "en-US",
-                    "label": "Expiry Date",
-                    "description": "The date and time expired this pid",
+                    "label": "Issue Date",
+                    "description": "Start date of the document's validity.",
                 }
             ],
-            "sd": "",
+            "sd": "always",
             "svg_id": "issuance_date",
         },
         {
@@ -99,10 +99,10 @@ vctm_dict = {
                 {
                     "lang": "en-US",
                     "label": "Expiry Date",
-                    "description": "The date and time expired this pid",
+                    "description": "End date of the document's validity.",
                 }
             ],
-            "sd": "",
+            "sd": "never",
             "svg_id": "expiry_date",
         },
     ],
