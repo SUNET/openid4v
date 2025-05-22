@@ -58,6 +58,18 @@ vctm_dict = {
             "svg_id": "given_name",
         },
         {
+            "path": ["birth_date"],
+            "sd": "always",
+            "svg_id": "birth_date",
+            "display": [
+                {
+                "lang": "en-US",
+                "label": "Date of birth",
+                "description": "Full birth date (day, month, year)."
+                }
+            ]
+         },
+        {
             "path": ["family_name"],
             "display": [
                 {
